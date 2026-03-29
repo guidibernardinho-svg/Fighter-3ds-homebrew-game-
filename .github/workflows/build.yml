@@ -1,0 +1,35 @@
+name: Build 3DS Fighter
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita rm:latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install 3DS libraries
+      run: |
+        dkp-pacman -Sy --noconfirm 3ds-dev 3ds-citro2d 3ds-libctru
+
+    - name: Build
+      run: |
+        export DEVKITPRO=/opt/devkitpro
+        export DEVKITARM=/opt/devkitpro/devkitARM
+        export PATH=$DEVKITARM/bin:$PATH
+        make -j$(nproc)
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: 3ds-fighter-3dsx
+        path: 3ds-fighter.3dsx
+        if-no-files-found: warn
